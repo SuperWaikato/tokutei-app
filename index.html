@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>特定行政書士試験対策アプリ</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --text: #1d2433;
+      --muted: #647089;
+      --accent: #1f5eff;
+      --accent-2: #0f3fb8;
+      --ok: #118a4d;
+      --ng: #c53b2c;
+      --line: #d9e0ec;
+      --warn: #f2b94b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    header {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      padding: 28px 20px;
+    }
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 1.8rem;
+    }
+    header p {
+      margin: 0;
+      opacity: 0.92;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tab-btn, button, .file-label {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: 0.15s ease;
+    }
+    .tab-btn.active, .primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .tab-btn:hover, button:hover, .file-label:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+    }
+    .panel {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 6px 20px rgba(20,40,80,0.04);
+    }
+    .panel.active { display: block; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .stat {
+      background: #fbfcfe;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .stat h3 {
+      margin: 0 0 4px;
+      font-size: 0.95rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .stat .value {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+    .question-card, .note, .editor-box {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: #fff;
+    }
+    .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .chip {
+      display: inline-block;
+      background: #eef3ff;
+      color: var(--accent-2);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .chip.gray {
+      background: #eef1f6;
+      color: var(--muted);
+    }
+    .choices {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .choice {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #fff;
+      cursor: pointer;
+    }
+    .choice.selected {
+      border-color: var(--accent);
+      background: #eef4ff;
+    }
+    .choice.correct {
+      border-color: var(--ok);
+      background: #ebfff3;
+    }
+    .choice.incorrect {
+      border-color: var(--ng);
+      background: #fff1ef;
+    }
+    .controls, .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .controls { margin-top: 16px; }
+    .explanation {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      background: #fbfcfe;
+      border: 1px solid var(--line);
+      display: none;
+    }
+    .explanation.show { display: block; }
+    .ok { color: var(--ok); font-weight: 700; }
+    .ng { color: var(--ng); font-weight: 700; }
+    select, input, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      font: inherit;
+      background: white;
+      color: var(--text);
+    }
+    textarea { min-height: 110px; }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .hidden { display: none !important; }
+    .small { font-size: 0.9rem; color: var(--muted); }
+    .timer {
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+    .list-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+    .badge.high { background: #fff0ee; color: var(--ng); }
+    .badge.mid { background: #fff8e7; color: #9b6500; }
+    .badge.low { background: #edf9f2; color: var(--ok); }
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      padding: 8px 0 24px;
+    }
+    #importFile { display: none; }
+    @media (max-width: 720px) {
+      .two-col { grid-template-columns: 1fr; }
+      header h1 { font-size: 1.45rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>特定行政書士試験対策アプリ</h1>
+    <p>オリジナル問題で演習・復習・弱点管理ができるブラウザ完結型アプリです。進捗は端末内に保存されます。</p>
+  </header>
+
+  <main>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="dashboard">ダッシュボード</button>
+      <button class="tab-btn" data-tab="study">通常演習</button>
+      <button class="tab-btn" data-tab="mock">模試モード</button>
+      <button class="tab-btn" data-tab="review">復習リスト</button>
+      <button class="tab-btn" data-tab="editor">問題編集</button>
+    </div>
+
+    <section class="panel active" id="dashboard">
+      <div class="grid" id="statsGrid"></div>
+      <div class="note" style="margin-top:12px;">
+        <strong>使い方の目安</strong><br>
+        1. 「通常演習」で分野を絞って学習<br>
+        2. 間違えた問題は自動で復習リストに蓄積<br>
+        3. 「模試モード」で時間を測って実戦感覚を確認<br>
+        4. 「問題編集」で自作論点や条文知識を追加
+      </div>
+      <div class="note" style="margin-top:12px;">
+        <strong>注意</strong><br>
+        このアプリの初期問題は、試験対策用に作成したオリジナル例題です。過去問の転載ではありません。必要に応じてご自身の論点カードや判例メモを追加してください。
+      </div>
+    </section>
+
+    <section class="panel" id="study">
+      <div class="row" style="margin-bottom:14px;">
+        <div style="min-width:220px; flex:1;">
+          <label>出題分野</label>
+          <select id="categoryFilter"></select>
+        </div>
+        <div style="min-width:220px; flex:1;">
+          <label>出題形式</label>
+          <select id="modeFilter">
+            <option value="all">すべて</option>
+            <option value="未学習">未学習のみ</option>
+            <option value="苦手">苦手のみ</option>
+          </select>
+        </div>
+      </div>
+      <div class="question-card">
+        <div class="meta" id="studyMeta"></div>
+        <div id="studyQuestion" style="font-weight:700; font-size:1.08rem;"></div>
+        <div class="choices" id="studyChoices"></div>
+        <div class="controls">
+          <button class="primary" id="checkAnswerBtn">解答する</button>
+          <button id="nextQuestionBtn">次の問題</button>
+          <button id="showOnlyWrongBtn">この問題を復習対象にする</button>
+        </div>
+        <div class="explanation" id="studyExplanation"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="mock">
+      <div class="grid" style="margin-bottom:12px;">
+        <div class="stat">
+          <h3>制限時間</h3>
+          <div class="value"><span id="mockTotalMinutes">15</span>分</div>
+          <div class="small">問題数に応じて変更可能</div>
+        </div>
+        <div class="stat">
+          <h3>経過 / 残り</h3>
+          <div class="value timer" id="mockTimer">15:00</div>
+          <div class="small">時間切れで自動採点</div>
+        </div>
+        <div class="stat">
+          <h3>現在の問題</h3>
+          <div class="value"><span id="mockIndex">0</span> / <span id="mockCount">0</span></div>
+          <div class="small">模試モード</div>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom:14px;">
+        <div style="min-width:220px; flex:1;">
+          <label>問題数</label>
+          <select id="mockQuestionCount">
+            <option value="5">5問</option>
+            <option value="10" selected>10問</option>
+            <option value="15">15問</option>
+          </select>
+        </div>
+        <div style="min-width:220px; flex:1;">
+          <label>制限時間（分）</label>
+          <select id="mockMinutes">
+            <option value="10">10分</option>
+            <option value="15" selected>15分</option>
+            <option value="20">20分</option>
+            <option value="30">30分</option>
+          </select>
+        </div>
+        <div class="row" style="align-self:end;">
+          <button class="primary" id="startMockBtn">模試開始</button>
+          <button id="finishMockBtn">終了して採点</button>
+        </div>
+      </div>
+      <div class="question-card">
+        <div class="meta" id="mockMeta"></div>
+        <div id="mockQuestion" style="font-weight:700; font-size:1.08rem;">「模試開始」を押してください。</div>
+        <div class="choices" id="mockChoices"></div>
+      </div>
+      <div class="explanation" id="mockResultBox"></div>
+    </section>
+
+    <section class="panel" id="review">
+      <div class="row" style="margin-bottom:14px;">
+        <button class="primary" id="refreshReviewBtn">更新</button>
+        <button id="clearProgressBtn">学習履歴をリセット</button>
+      </div>
+      <div id="reviewSummary" class="note" style="margin-bottom:12px;"></div>
+      <div class="list" id="reviewList"></div>
+    </section>
+
+    <section class="panel" id="editor">
+      <div class="editor-box">
+        <div class="two-col">
+          <div>
+            <label>分野</label>
+            <input id="newCategory" placeholder="例：行政手続法" />
+          </div>
+          <div>
+            <label>正解の選択肢番号</label>
+            <select id="newCorrect">
+              <option value="0">1</option>
+              <option value="1">2</option>
+              <option value="2">3</option>
+              <option value="3">4</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <label>問題文</label>
+          <textarea id="newQuestion" placeholder="問題文を入力"></textarea>
+        </div>
+        <div class="two-col" style="margin-top:12px;">
+          <div><label>選択肢1</label><input id="choice1" /></div>
+          <div><label>選択肢2</label><input id="choice2" /></div>
+          <div><label>選択肢3</label><input id="choice3" /></div>
+          <div><label>選択肢4</label><input id="choice4" /></div>
+        </div>
+        <div style="margin-top:12px;">
+          <label>解説</label>
+          <textarea id="newExplanation" placeholder="根拠や覚え方を記入"></textarea>
+        </div>
+        <div class="controls">
+          <button class="primary" id="addQuestionBtn">問題を追加</button>
+          <button id="exportBtn">問題データを書き出し</button>
+          <label class="file-label" for="importFile">問題データを読み込み</label>
+          <input type="file" id="importFile" accept="application/json" />
+        </div>
+        <div class="small" style="margin-top:10px;">
+          自作の論点メモや一問一答を追加できます。書き出したJSONをバックアップしておくと安心です。
+        </div>
+      </div>
+      <div class="note" style="margin-top:12px;">
+        <strong>おすすめの使い方</strong><br>
+        申立て、審査請求、行政手続法、行政不服審査法、行政事件訴訟法、地方自治法、民法の周辺知識など、頻出論点ごとに短い一問一答を作ると回しやすいです。
+      </div>
+    </section>
+
+    <div class="footer">特定行政書士試験対策アプリ / ローカル保存対応</div>
+  </main>
+
+  <script>
+    const defaultQuestions = [
+      {
+        id: crypto.randomUUID(),
+        category: '行政不服審査法',
+        question: '審査請求の原則的な提起先として最も適切なものはどれか。',
+        choices: ['裁判所', '処分庁の上級行政庁等', '国会', '会計検査院'],
+        correctIndex: 1,
+        explanation: '行政不服審査法では、原則として処分庁の上級行政庁等に対して審査請求を行う。個別法や例外もあるが、基本の型を押さえることが重要。'
+      },
+      {
+        id: crypto.randomUUID(),
+        category: '行政不服審査法',
+        question: '審査請求期間の原則として正しいものはどれか。',
+        choices: ['処分があったことを知った日の翌日から3か月以内', '処分があった日の翌日から必ず30日以内', '知った日から6か月以内であれば常に可', '期間制限はない'],
+        correctIndex: 0,
+        explanation: '原則は「処分があったことを知った日の翌日から3か月以内」。さらに処分の日の翌日から1年という客観的期間制限も押さえておくとよい。'
+      },
+      {
+        id: crypto.randomUUID(),
+        category: '行政手続法',
+        question: '不利益処分に先立つ意見陳述手続として、行政手続法上定められているものの組合せとして正しいものはどれか。',
+        choices: ['聴聞と弁明の機会の付与', '口頭弁論と陪審', '公聴会と住民投票', '異議申立てと再審'],
+        correctIndex: 0,
+        explanation: '不利益処分の事前手続として代表的なのは聴聞と弁明の機会の付与。どちらになるかは処分の性質等で異なる。'
+      },
+      {
+        id: crypto.randomUUID(),
+        category: '行政手続法',
+        question: '申請に対する処分について、行政庁が審査基準を定める趣旨として最も適切なものはどれか。',
+        choices: ['審査の恣意性を抑え透明性を高めるため', '審査期間を無制限に延ばすため', '裁判所の判断を代替するため', '申請人を区別して扱うため'],
+        correctIndex: 0,
+        explanation: '審査基準は、行政運営の公正確保と透明性向上のために重要。申請者の予測可能性にも資する。'
+      },
+      {
+        id: crypto.randomUUID(),
+        category: '行政事件訴訟法',
+        question: '取消訴訟の対象となる「処分」に関する説明として最も適切なものはどれか。',
+        choices: ['行政庁の一切の内部文書', '国民の権利義務に直接具体的な法的効果を及ぼす公権力の行使', '議会の政治的発言', '私人間契約の締結'],
+        correctIndex: 1,
+        explanation: '取消訴訟の対象となる処分は、一般に公権力の主体たる国・公共団体が行う行為のうち、国民の権利義務形成や範囲確定に直接具体的な法的効果を及ぼすものをいう。'
+      },
+      {
+        id: crypto.randomUUID(),
+        category: '行政事件訴訟法',
+        question: '執行停止に関する説明として正しいものはどれか。',
+        choices: ['取消訴訟を提起すれば常に当然に停止する', '重大な損害を避けるため緊急の必要があるなどの要件が問題となる', '行政庁の同意がある場合しかできない', '地方議会が決定する'],
+        correctIndex: 1,
+        explanation: '取消訴訟の提起だけでは執行は停止しない。執行停止には、重大な損害を避けるための緊急の必要などの要件がある。'
+      },
+      {
+        id: crypto.randomUUID(),
+        category: '地方自治法',
+        question: '条例についての説明として最も適切なものはどれか。',
+        choices: ['国会のみが制定できる', '地方公共団体が法令の範囲内で制定する自治立法', '裁判所の判決と同じ効力を持つ', '私人が自由に作成できるルール'],
+        correctIndex: 1,
+        explanation: '条例は地方公共団体が法令の範囲内で制定する自治立法。規則との違いも整理しておきたい。'
+      },
+      {
+        id: crypto.randomUUID(),
+        category: '民法・周辺知識',
+        question: '時効に関する一般的説明として最も適切なものはどれか。',
+        choices: ['時効は常に裁判所が職権で援用する', '時効制度は権利関係の早期安定に資する', '時効は刑事事件にしか存在しない', '行政処分には一切関係しない'],
+        correctIndex: 1,
+        explanation: '時効制度は永続する不安定状態を避け、権利関係の安定を図る趣旨を持つ。援用との関係も基本事項。'
+      },
+      {
+        id: crypto.randomUUID(),
+        category: '行政不服審査法',
+        question: '再調査の請求に関する説明として最も適切なものはどれか。',
+        choices: ['常に審査請求に先立って必須である', '法律に特別の定めがある場合に選択されることがある', '裁判上の上訴手続である', '国会に対して行う申立てである'],
+        correctIndex: 1,
+        explanation: '再調査の請求は、常に一般的に認められるのではなく、個別法の特別の定めがある場合に問題となる。審査請求との関係整理が重要。'
+      },
+      {
+        id: crypto.randomUUID(),
+        category: '行政手続法',
+        question: '行政指導に関する説明として最も適切なものはどれか。',
+        choices: ['相手方は常に従う法的義務を負う', '行政指導は任意の協力を前提とする', '行政指導は必ず書面でなければならない', '行政指導に理由提示は一切不要である'],
+        correctIndex: 1,
+        explanation: '行政指導は相手方の任意の協力によって実現されることが前提。事実上の強制に流れないよう、行政手続法の趣旨を押さえる。'
+      },
+      {
+        id: crypto.randomUUID(),
+        category: '行政事件訴訟法',
+        question: '原告適格に関する説明として最も適切なものはどれか。',
+        choices: ['誰でも公益のために自由に取消訴訟を提起できる', '法律上の利益を有する者が原告適格を有する', '行政庁だけが原告になれる', '住民票がある者は常に原告適格を有する'],
+        correctIndex: 1,
+        explanation: '取消訴訟の原告適格は、当該処分の取消しを求めるにつき法律上の利益を有する者に認められる。判例の考え方も重要。'
+      },
+      {
+        id: crypto.randomUUID(),
+        category: '横断整理',
+        question: '処分理由の提示が問題となりやすい場面として最も適切なものはどれか。',
+        choices: ['申請を認容する場合', '申請拒否や不利益処分など相手方に不利な判断をする場合', '国会答弁', '私人の意思表示'],
+        correctIndex: 1,
+        explanation: '理由提示は、不服申立てや争訟の準備、行政運営の公正確保の観点から重要。拒否処分や不利益処分で特に問題になりやすい。'
+      }
+    ];
+
+    const STORAGE_KEY = 'tokutei-gyoseishoshi-app-v1';
+    const PROGRESS_KEY = 'tokutei-gyoseishoshi-progress-v1';
+
+    let questions = loadQuestions();
+    let progress = loadProgress();
+    let currentStudyQuestion = null;
+    let currentStudySelected = null;
+    let mockState = {
+      active: false,
+      questions: [],
+      answers: {},
+      index: 0,
+      remaining: 900,
+      timerId: null
+    };
+
+    function loadQuestions() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return [...defaultQuestions];
+      try { return JSON.parse(saved); } catch { return [...defaultQuestions]; }
+    }
+
+    function saveQuestions() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(questions));
+    }
+
+    function loadProgress() {
+      const saved = localStorage.getItem(PROGRESS_KEY);
+      if (!saved) return {};
+      try { return JSON.parse(saved); } catch { return {}; }
+    }
+
+    function saveProgress() {
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+    }
+
+    function getRecord(id) {
+      if (!progress[id]) {
+        progress[id] = { attempts: 0, correct: 0, wrong: 0, manualReview: false, lastResult: null };
+      }
+      return progress[id];
+    }
+
+    function updateDashboard() {
+      const total = questions.length;
+      const attempted = questions.filter(q => (progress[q.id]?.attempts || 0) > 0).length;
+      const totalAttempts = Object.values(progress).reduce((a, r) => a + (r.attempts || 0), 0);
+      const totalCorrect = Object.values(progress).reduce((a, r) => a + (r.correct || 0), 0);
+      const weakCount = questions.filter(q => isWeak(q)).length;
+      const accuracy = totalAttempts ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
+
+      document.getElementById('statsGrid').innerHTML = `
+        <div class="stat"><h3>登録問題数</h3><div class="value">${total}</div></div>
+        <div class="stat"><h3>学習済み問題</h3><div class="value">${attempted}</div></div>
+        <div class="stat"><h3>正答率</h3><div class="value">${accuracy}%</div></div>
+        <div class="stat"><h3>復習優先問題</h3><div class="value">${weakCount}</div></div>
+      `;
+    }
+
+    function populateCategoryFilter() {
+      const categories = [...new Set(questions.map(q => q.category))].sort();
+      const select = document.getElementById('categoryFilter');
+      const current = select.value;
+      select.innerHTML = `<option value="all">すべて</option>` + categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      if ([...select.options].some(o => o.value === current)) select.value = current;
+    }
+
+    function isWeak(q) {
+      const r = progress[q.id];
+      if (!r) return false;
+      if (r.manualReview) return true;
+      return (r.wrong || 0) > (r.correct || 0);
+    }
+
+    function filteredStudyPool() {
+      const category = document.getElementById('categoryFilter').value || 'all';
+      const mode = document.getElementById('modeFilter').value || 'all';
+      return questions.filter(q => {
+        if (category !== 'all' && q.category !== category) return false;
+        const r = progress[q.id];
+        if (mode === '未学習') return !(r && r.attempts > 0);
+        if (mode === '苦手') return isWeak(q);
+        return true;
+      });
+    }
+
+    function randomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function renderStudyQuestion() {
+      const pool = filteredStudyPool();
+      const meta = document.getElementById('studyMeta');
+      const question = document.getElementById('studyQuestion');
+      const choices = document.getElementById('studyChoices');
+      const explanation = document.getElementById('studyExplanation');
+      explanation.classList.remove('show');
+      explanation.innerHTML = '';
+      currentStudySelected = null;
+
+      if (!pool.length) {
+        currentStudyQuestion = null;
+        meta.innerHTML = '';
+        question.textContent = '条件に合う問題がありません。フィルタを変更してください。';
+        choices.innerHTML = '';
+        return;
+      }
+
+      currentStudyQuestion = randomItem(pool);
+      const record = getRecord(currentStudyQuestion.id);
+      let levelClass = 'low';
+      let levelText = '安定';
+      if (isWeak(currentStudyQuestion)) { levelClass = 'high'; levelText = '復習優先'; }
+      else if (record.attempts > 0) { levelClass = 'mid'; levelText = '学習中'; }
+
+      meta.innerHTML = `
+        <span class="chip">${escapeHtml(currentStudyQuestion.category)}</span>
+        <span class="chip gray">学習回数: ${record.attempts}</span>
+        <span class="badge ${levelClass}">${levelText}</span>
+      `;
+      question.textContent = currentStudyQuestion.question;
+      choices.innerHTML = currentStudyQuestion.choices.map((c, i) => `
+        <button class="choice" data-index="${i}"><strong>${i+1}.</strong> ${escapeHtml(c)}</button>
+      `).join('');
+
+      document.querySelectorAll('#studyChoices .choice').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#studyChoices .choice').forEach(x => x.classList.remove('selected'));
+          btn.classList.add('selected');
+          currentStudySelected = Number(btn.dataset.index);
+        });
+      });
+    }
+
+    function checkStudyAnswer() {
+      if (!currentStudyQuestion) return;
+      if (currentStudySelected === null) {
+        alert('選択肢を選んでください。');
+        return;
+      }
+      const record = getRecord(currentStudyQuestion.id);
+      record.attempts += 1;
+      const correct = currentStudySelected === currentStudyQuestion.correctIndex;
+      record.lastResult = correct ? 'correct' : 'wrong';
+      if (correct) {
+        record.correct += 1;
+        if (record.wrong <= record.correct) record.manualReview = false;
+      } else {
+        record.wrong += 1;
+      }
+      saveProgress();
+
+      document.querySelectorAll('#studyChoices .choice').forEach(btn => {
+        const idx = Number(btn.dataset.index);
+        btn.disabled = true;
+        if (idx === currentStudyQuestion.correctIndex) btn.classList.add('correct');
+        if (idx === currentStudySelected && idx !== currentStudyQuestion.correctIndex) btn.classList.add('incorrect');
+      });
+
+      const explanation = document.getElementById('studyExplanation');
+      explanation.classList.add('show');
+      explanation.innerHTML = `
+        <div class="${correct ? 'ok' : 'ng'}">${correct ? '正解です。' : '不正解です。'}</div>
+        <div style="margin-top:8px;"><strong>解説</strong><br>${escapeHtml(currentStudyQuestion.explanation).replace(/\n/g,'<br>')}</div>
+      `;
+      updateDashboard();
+      renderReview();
+    }
+
+    function renderReview() {
+      const list = document.getElementById('reviewList');
+      const items = questions
+        .map(q => ({ q, r: getRecord(q.id) }))
+        .filter(({q, r}) => r.manualReview || r.wrong > 0)
+        .sort((a, b) => (b.r.wrong - b.r.correct) - (a.r.wrong - a.r.correct));
+
+      const summary = document.getElementById('reviewSummary');
+      summary.innerHTML = `復習対象は <strong>${items.length}問</strong>。<br>「誤答が多い」「手動で復習指定した」問題を表示しています。`;
+
+      if (!items.length) {
+        list.innerHTML = '<div class="list-item">まだ復習対象はありません。</div>';
+        return;
+      }
+
+      list.innerHTML = items.map(({q, r}) => {
+        let label = '軽め';
+        let cls = 'low';
+        const gap = (r.wrong || 0) - (r.correct || 0);
+        if (r.manualReview || gap >= 2) { label = '高'; cls = 'high'; }
+        else if (gap >= 1) { label = '中'; cls = 'mid'; }
+        return `
+          <div class="list-item">
+            <div class="meta">
+              <span class="chip">${escapeHtml(q.category)}</span>
+              <span class="badge ${cls}">優先度 ${label}</span>
+            </div>
+            <div><strong>${escapeHtml(q.question)}</strong></div>
+            <div class="small" style="margin-top:6px;">正解 ${r.correct || 0} / 誤答 ${r.wrong || 0} / 学習回数 ${r.attempts || 0}</div>
+            <div style="margin-top:8px;">${escapeHtml(q.explanation)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function markCurrentForReview() {
+      if (!currentStudyQuestion) return;
+      const record = getRecord(currentStudyQuestion.id);
+      record.manualReview = true;
+      saveProgress();
+      renderReview();
+      updateDashboard();
+      alert('復習対象に追加しました。');
+    }
+
+    function startMock() {
+      const count = Number(document.getElementById('mockQuestionCount').value);
+      const minutes = Number(document.getElementById('mockMinutes').value);
+      document.getElementById('mockTotalMinutes').textContent = String(minutes);
+      const pool = [...questions].sort(() => Math.random() - 0.5).slice(0, Math.min(count, questions.length));
+      mockState.questions = pool;
+      mockState.answers = {};
+      mockState.index = 0;
+      mockState.remaining = minutes * 60;
+      mockState.active = true;
+      if (mockState.timerId) clearInterval(mockState.timerId);
+      mockState.timerId = setInterval(() => {
+        mockState.remaining -= 1;
+        updateMockTimer();
+        if (mockState.remaining <= 0) finishMock();
+      }, 1000);
+      document.getElementById('mockCount').textContent = pool.length;
+      document.getElementById('mockResultBox').classList.remove('show');
+      document.getElementById('mockResultBox').innerHTML = '';
+      renderMockQuestion();
+      updateMockTimer();
+    }
+
+    function updateMockTimer() {
+      const sec = Math.max(0, mockState.remaining);
+      const m = String(Math.floor(sec / 60)).padStart(2, '0');
+      const s = String(sec % 60).padStart(2, '0');
+      document.getElementById('mockTimer').textContent = `${m}:${s}`;
+    }
+
+    function renderMockQuestion() {
+      const meta = document.getElementById('mockMeta');
+      const qBox = document.getElementById('mockQuestion');
+      const choices = document.getElementById('mockChoices');
+      if (!mockState.active || !mockState.questions.length) {
+        meta.innerHTML = '';
+        qBox.textContent = '「模試開始」を押してください。';
+        choices.innerHTML = '';
+        document.getElementById('mockIndex').textContent = '0';
+        return;
+      }
+      const q = mockState.questions[mockState.index];
+      document.getElementById('mockIndex').textContent = String(mockState.index + 1);
+      meta.innerHTML = `<span class="chip">${escapeHtml(q.category)}</span><span class="chip gray">模試</span>`;
+      qBox.textContent = q.question;
+      choices.innerHTML = q.choices.map((c, i) => `
+        <button class="choice ${mockState.answers[q.id] === i ? 'selected' : ''}" data-index="${i}"><strong>${i+1}.</strong> ${escapeHtml(c)}</button>
+      `).join('') + `
+      <div class="controls">
+        <button id="mockPrevBtn">前へ</button>
+        <button id="mockNextBtn" class="primary">次へ</button>
+      </div>`;
+
+      document.querySelectorAll('#mockChoices .choice').forEach(btn => {
+        btn.addEventListener('click', () => {
+          mockState.answers[q.id] = Number(btn.dataset.index);
+          renderMockQuestion();
+        });
+      });
+      document.getElementById('mockPrevBtn').addEventListener('click', () => {
+        if (mockState.index > 0) mockState.index -= 1;
+        renderMockQuestion();
+      });
+      document.getElementById('mockNextBtn').addEventListener('click', () => {
+        if (mockState.index < mockState.questions.length - 1) {
+          mockState.index += 1;
+          renderMockQuestion();
+        } else {
+          finishMock();
+        }
+      });
+    }
+
+    function finishMock() {
+      if (!mockState.active) return;
+      mockState.active = false;
+      if (mockState.timerId) clearInterval(mockState.timerId);
+      let score = 0;
+      const details = mockState.questions.map(q => {
+        const selected = mockState.answers[q.id];
+        const correct = selected === q.correctIndex;
+        const r = getRecord(q.id);
+        r.attempts += 1;
+        if (correct) r.correct += 1; else r.wrong += 1;
+        r.lastResult = correct ? 'correct' : 'wrong';
+        if (!correct) r.manualReview = true;
+        if (correct) score += 1;
+        return { q, selected, correct };
+      });
+      saveProgress();
+      updateDashboard();
+      renderReview();
+      document.getElementById('mockQuestion').textContent = '採点が完了しました。';
+      document.getElementById('mockChoices').innerHTML = '';
+      const box = document.getElementById('mockResultBox');
+      box.classList.add('show');
+      box.innerHTML = `
+        <div style="font-weight:700; font-size:1.08rem;">模試結果：${score} / ${mockState.questions.length}</div>
+        <div class="small" style="margin:6px 0 12px;">誤答問題は自動で復習対象に入っています。</div>
+        ${details.map((d, idx) => `
+          <div style="padding:10px 0; border-top:${idx === 0 ? 'none' : '1px solid var(--line)'};">
+            <div class="${d.correct ? 'ok' : 'ng'}">${d.correct ? '正解' : '不正解'}</div>
+            <div><strong>${escapeHtml(d.q.question)}</strong></div>
+            <div class="small">あなたの解答：${d.selected === undefined ? '未解答' : d.selected + 1} / 正解：${d.q.correctIndex + 1}</div>
+            <div style="margin-top:6px;">${escapeHtml(d.q.explanation)}</div>
+          </div>
+        `).join('')}
+      `;
+      renderMockQuestion();
+    }
+
+    function addQuestion() {
+      const category = document.getElementById('newCategory').value.trim();
+      const question = document.getElementById('newQuestion').value.trim();
+      const explanation = document.getElementById('newExplanation').value.trim();
+      const choices = [
+        document.getElementById('choice1').value.trim(),
+        document.getElementById('choice2').value.trim(),
+        document.getElementById('choice3').value.trim(),
+        document.getElementById('choice4').value.trim()
+      ];
+      const correctIndex = Number(document.getElementById('newCorrect').value);
+      if (!category || !question || choices.some(c => !c)) {
+        alert('分野・問題文・4つの選択肢を入力してください。');
+        return;
+      }
+      questions.push({ id: crypto.randomUUID(), category, question, choices, correctIndex, explanation: explanation || '解説未入力' });
+      saveQuestions();
+      populateCategoryFilter();
+      updateDashboard();
+      renderStudyQuestion();
+      renderReview();
+      ['newCategory','newQuestion','newExplanation','choice1','choice2','choice3','choice4'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('newCorrect').value = '0';
+      alert('問題を追加しました。');
+    }
+
+    function exportData() {
+      const blob = new Blob([JSON.stringify(questions, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'tokutei_gyoseishoshi_questions.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const imported = JSON.parse(reader.result);
+          if (!Array.isArray(imported)) throw new Error();
+          const valid = imported.every(q => q.category && q.question && Array.isArray(q.choices) && q.choices.length === 4 && Number.isInteger(q.correctIndex));
+          if (!valid) throw new Error();
+          questions = imported.map(q => ({ ...q, id: q.id || crypto.randomUUID(), explanation: q.explanation || '' }));
+          saveQuestions();
+          populateCategoryFilter();
+          updateDashboard();
+          renderStudyQuestion();
+          renderReview();
+          alert('問題データを読み込みました。');
+        } catch {
+          alert('JSON形式が正しくありません。');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearProgress() {
+      if (!confirm('学習履歴をリセットします。よろしいですか？')) return;
+      progress = {};
+      saveProgress();
+      updateDashboard();
+      renderStudyQuestion();
+      renderReview();
+      alert('学習履歴をリセットしました。');
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    document.getElementById('categoryFilter').addEventListener('change', renderStudyQuestion);
+    document.getElementById('modeFilter').addEventListener('change', renderStudyQuestion);
+    document.getElementById('checkAnswerBtn').addEventListener('click', checkStudyAnswer);
+    document.getElementById('nextQuestionBtn').addEventListener('click', renderStudyQuestion);
+    document.getElementById('showOnlyWrongBtn').addEventListener('click', markCurrentForReview);
+    document.getElementById('refreshReviewBtn').addEventListener('click', renderReview);
+    document.getElementById('clearProgressBtn').addEventListener('click', clearProgress);
+    document.getElementById('startMockBtn').addEventListener('click', startMock);
+    document.getElementById('finishMockBtn').addEventListener('click', finishMock);
+    document.getElementById('addQuestionBtn').addEventListener('click', addQuestion);
+    document.getElementById('exportBtn').addEventListener('click', exportData);
+    document.getElementById('importFile').addEventListener('change', importData);
+    document.getElementById('mockMinutes').addEventListener('change', e => {
+      document.getElementById('mockTotalMinutes').textContent = e.target.value;
+      if (!mockState.active) document.getElementById('mockTimer').textContent = `${String(e.target.value).padStart(2,'0')}:00`;
+    });
+
+    populateCategoryFilter();
+    updateDashboard();
+    renderStudyQuestion();
+    renderReview();
+    document.getElementById('mockTotalMinutes').textContent = document.getElementById('mockMinutes').value;
+    document.getElementById('mockTimer').textContent = `${String(document.getElementById('mockMinutes').value).padStart(2,'0')}:00`;
+  </script>
+</body>
+</html>
